@@ -106,10 +106,16 @@ div[data-testid="metric-container"] {
 
 # ── Helper functions ───────────────────────────────────────────────────────────
 
+# Non-LLM nodes that produce no confidence score
+_NON_LLM_NODES = {"ingest_node", "chunk_embed_node", "audit_log_node", "human_review_node"}
+
+
+@st.cache_data(ttl=5)  # 5-second TTL — all pages share the same cached result
 def get_stats():
-    """Return aggregate stats from the audit log."""
+    """Return aggregate stats. Cached briefly so sidebar and main area always agree."""
     try:
         session = get_session()
+        # Count only docs that went through the full pipeline (have a human_review_node entry)
         total_docs = session.query(AuditLog.document_id).distinct().count()
         session.close()
     except Exception:
@@ -128,6 +134,13 @@ def get_stats():
         "dismissed": dismissed_count,
         "reviewed": reviewed_count,
     }
+
+
+def fmt_confidence(node_name: str, score: float) -> str:
+    """Return confidence as a formatted string; N/A for non-LLM nodes."""
+    if node_name in _NON_LLM_NODES:
+        return "N/A (no LLM call)"
+    return f"{score:.3f}"
 
 
 def status_badge(status: str) -> str:
@@ -174,7 +187,37 @@ if page == "📊 Overview":
         df = pd.DataFrame(all_issues)
         status_counts = df["status"].value_counts().reset_index()
         status_counts.columns = ["Status", "Count"]
-        st.bar_chart(status_counts.set_index("Status"))
+
+        # Plotly bar chart with custom palette
+        try:
+            import plotly.graph_objects as go
+            colour_map = {
+                "open": "#ef4444",
+                "confirmed": "#22c55e",
+                "dismissed": "#6b7280",
+                "reviewed": "#f59e0b",
+            }
+            colours = [colour_map.get(s, "#3b82f6") for s in status_counts["Status"]]
+            fig = go.Figure(go.Bar(
+                x=status_counts["Status"],
+                y=status_counts["Count"],
+                marker_color=colours,
+                text=status_counts["Count"],
+                textposition="outside",
+            ))
+            fig.update_layout(
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font_color="#f1f5f9",
+                showlegend=False,
+                margin=dict(t=20, b=20, l=20, r=20),
+                height=280,
+                yaxis=dict(gridcolor="#334155"),
+                xaxis=dict(showgrid=False),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        except ImportError:
+            st.bar_chart(status_counts.set_index("Status"))
 
         st.subheader("All Issues (Summary)")
         display_df = df[["id", "document_id", "clause_id", "status", "reviewed_by", "reviewed_at"]].copy()
@@ -300,7 +343,10 @@ elif page == "🔍 Audit Trail":
                     col_t1, col_t2 = st.columns(2)
                     col_t1.write(f"**Input:** {entry['input_summary']}")
                     col_t2.write(f"**Output:** {entry['output_summary']}")
-                    col_t1.write(f"**Confidence:** {entry['confidence_score']:.3f}")
+                    col_t1.write(
+                        f"**Confidence:** "
+                        f"{fmt_confidence(entry['node_name'], entry['confidence_score'])}"
+                    )
 
                     snapshot = entry["state_snapshot"]
                     if snapshot:

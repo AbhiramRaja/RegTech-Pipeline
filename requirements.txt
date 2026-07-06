@@ -21,6 +21,7 @@ unstructured[pdf]>=0.14.0
 # Dashboard
 streamlit>=1.35.0
 pandas>=2.0.0
+plotly>=5.0.0
 
 # Config & environment
 pydantic-settings>=2.0.0
