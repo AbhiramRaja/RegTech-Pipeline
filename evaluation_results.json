@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "documents_evaluated": 3,
+    "total_known_violations": 6,
+    "total_true_positives": 6,
+    "total_false_positives": 13,
+    "total_false_negatives": 0,
+    "avg_precision": 0.3036,
+    "avg_recall": 1.0,
+    "avg_f1": 0.4633,
+    "avg_confidence": 0.8156
+  },
+  "per_document": [
+    {
+      "doc_id": "policy_business_continuity",
+      "ground_truth_violations": 1,
+      "detected_issues": 4,
+      "true_positives": 1,
+      "false_negatives": 0,
+      "false_positives": 3,
+      "precision": 0.25,
+      "recall": 1.0,
+      "f1": 0.4,
+      "confidence_score": 0.8333333333333335,
+      "verification_status": "flagged",
+      "audit_log_entries": 6,
+      "caught": [
+        "BCP testing biennial \u2014 FINRA Rule 4370 requires annual"
+      ],
+      "missed": [],
+      "guardrail_passed": true,
+      "retry_count": 0
+    },
+    {
+      "doc_id": "policy_capital_adequacy",
+      "ground_truth_violations": 2,
+      "detected_issues": 7,
+      "true_positives": 2,
+      "false_negatives": 0,
+      "false_positives": 5,
+      "precision": 0.2857142857142857,
+      "recall": 1.0,
+      "f1": 0.4444444444444445,
+      "confidence_score": 0.8333333333333334,
+      "verification_status": "flagged",
+      "audit_log_entries": 6,
+      "caught": [
+        "CET1 ratio 3.5% below Basel III minimum of 4.5%",
+        "Tier 1 ratio 5.0% below Basel III minimum of 6.0%"
+      ],
+      "missed": [],
+      "guardrail_passed": true,
+      "retry_count": 0
+    },
+    {
+      "doc_id": "policy_risk_management",
+      "ground_truth_violations": 3,
+      "detected_issues": 8,
+      "true_positives": 3,
+      "false_negatives": 0,
+      "false_positives": 5,
+      "precision": 0.375,
+      "recall": 1.0,
+      "f1": 0.5454545454545454,
+      "confidence_score": 0.7799999999999999,
+      "verification_status": "flagged",
+      "audit_log_entries": 6,
+      "caught": [
+        "VaR at 95% CI \u2014 Basel III requires 99% for internal models",
+        "Stress testing quarterly \u2014 Basel III requires monthly",
+        "No CVA capital charge applied to counterparty credit risk"
+      ],
+      "missed": [],
+      "guardrail_passed": true,
+      "retry_count": 0
+    }
+  ]
+}
